@@ -1,0 +1,30 @@
+create table players(
+    id int not null auto_increment,
+    username varchar(15) unique ,
+    name varchar(25),
+    primary key (id)
+);
+
+create table games(
+    id int not null auto_increment,
+    name varchar(25) unique,
+    primary key (id)
+);
+
+create table party_to_the_game(
+    id int not null auto_increment,
+    game_id int,
+    date varchar(50),
+    primary key (id),
+    foreign key (game_id) references games(id)
+);
+
+create table results(
+    id int not null auto_increment,
+    party_to_the_game_id int,
+    players_id int,
+    number_of_points_per_game int,
+    primary key (id),
+    foreign key (party_to_the_game_id) references party_to_the_game(id),
+    foreign key (players_id) references  players(id)
+);
