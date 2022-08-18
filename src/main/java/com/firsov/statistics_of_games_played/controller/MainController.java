@@ -16,14 +16,17 @@ import java.util.List;
 @Controller
 public class MainController {
 
-    @Autowired
-    private GameService gameService;
+    private final GameService gameService;
+    private final PlayerService playerService;
+    private final PartyToTheGameService partyToTheGameService;
 
     @Autowired
-    private PlayerService playerService;
-
-    @Autowired
-    private PartyToTheGameService partyToTheGameService;
+    public MainController(GameService gameService, PlayerService playerService,
+                          PartyToTheGameService partyToTheGameService) {
+        this.gameService = gameService;
+        this.playerService = playerService;
+        this.partyToTheGameService = partyToTheGameService;
+    }
 
     @GetMapping("/index")
     public String showAll(Model model) {

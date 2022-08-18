@@ -22,7 +22,7 @@
     <div class="w3-col w3-container" style="width:40%">
         <h3> Чтобы получить информацию по конкретной игре:</h3>
         <form:form action="show_info_selected_game" method="get">
-           Выберите игру:
+            Выберите игру:
             <select name="selectedGame">
                 <c:forEach var="game" items="${games}">
                     <option value="${game.name}">
@@ -61,7 +61,8 @@
 
         </table>
 
-    <input class="w3-btn w3-border w3-round w3-blue" type="button" value="Добавить игру" onclick="window.location.href = 'add_game'"/>
+        <input class="w3-btn w3-border w3-round w3-blue" type="button" value="Добавить игру"
+               onclick="window.location.href = 'add_game'"/>
 
 
     </div>
@@ -94,14 +95,26 @@
             </c:forEach>
         </table>
 
-        <input class="w3-btn w3-border w3-round w3-blue" type="button" value="Добавить игрока" onclick="window.location.href ='add_player'">
+        <input class="w3-btn w3-border w3-round w3-blue" type="button" value="Добавить игрока"
+               onclick="window.location.href ='add_player'">
     </div>
 </div>
 
 <div class="w3-container">
 
     <div class="w3-col w3-container" style="width:100%">
-        <h3> Список сыгранных игр</h3>
+        <div class="w3-container">
+            <div class="w3-col w3-container" style="width:20%">
+                <input class="w3-btn w3-border w3-round w3-blue" type="button" value="Добавить партию"
+                       onclick="window.location.href ='add_party'">
+            </div>
+            <div class="w3-col w3-container w3-center" style="width:60%">
+                <h3> Список сыгранных игр</h3>
+            </div>
+            <div class="w3-col w3-container" style="width:20%"></div>
+
+        </div>
+
         <table class="w3-table-all w3-centered w3-card-4">
             <tr class="w3-blue">
                 <th>Номер</th>
@@ -115,12 +128,17 @@
                 <th>очки</th>
                 <th>Игрок 4:</th>
                 <th>очки</th>
+                <th>Изменить</th>
                 <th>Удалить</th>
             </tr>
 
             <c:forEach var="party" items="${parties}" varStatus="number">
 
                 <c:url var="deletePartyButton" value="/delete_party">
+                    <c:param name="partyId" value="${party.id}"/>
+                </c:url>
+
+                <c:url var="updatePartyButton" value="/update_party">
                     <c:param name="partyId" value="${party.id}"/>
                 </c:url>
 
@@ -141,13 +159,17 @@
                     </c:forEach>
 
                     <td>
+                        <input type="button" value="Изменить" onclick="window.location.href= '${updatePartyButton}'">
+                    </td>
+
+                    <td>
                         <input type="button" value="Удалить" onclick="window.location.href= '${deletePartyButton}'">
                     </td>
                 </tr>
             </c:forEach>
 
         </table>
-        <input class="w3-btn w3-border w3-round w3-blue" type="button" value="Добавить партию" onclick="window.location.href ='add_party'">
+
     </div>
 </div>
 

@@ -1,9 +1,7 @@
 package com.firsov.statistics_of_games_played.entity;
 
-
 import javax.persistence.*;
-import java.util.List;
-
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "party_to_the_game")
@@ -19,8 +17,7 @@ public class PartyToTheGame {
     private Game game;
 
     @Column(name = "date")
-    private String date;
-
+    private LocalDateTime date;
 
     public PartyToTheGame() {
     }
@@ -41,11 +38,11 @@ public class PartyToTheGame {
         this.game = game;
     }
 
-    public String getDate() {
+    public LocalDateTime getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(LocalDateTime date) {
         this.date = date;
     }
 }

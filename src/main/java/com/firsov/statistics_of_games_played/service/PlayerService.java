@@ -5,7 +5,10 @@ import com.firsov.statistics_of_games_played.dao.ResultRepository;
 import com.firsov.statistics_of_games_played.dto.PlayerDto;
 import com.firsov.statistics_of_games_played.entity.Player;
 import com.firsov.statistics_of_games_played.entity.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,11 +20,16 @@ import java.util.stream.Collectors;
 @Transactional
 public class PlayerService {
 
-    @Autowired
-    private PlayerRepository playerRepository;
+    Logger logger = LoggerFactory.getLogger(PlayerService.class);
+
+    private final PlayerRepository playerRepository;
+    private final ResultRepository resultRepository;
 
     @Autowired
-    private ResultRepository resultRepository;
+    public PlayerService(PlayerRepository playerRepository, ResultRepository resultRepository) {
+        this.playerRepository = playerRepository;
+        this.resultRepository = resultRepository;
+    }
 
     public List<PlayerDto> getAllPlayerDto() {
         List<Result> results = resultRepository.findAll();
@@ -46,7 +54,13 @@ public class PlayerService {
 
     public void savePlayer(PlayerDto playerDto) {
         Player player = new Player(playerDto.getUsername(), playerDto.getName());
-        playerRepository.save(player);
+        try {
+            playerRepository.save(player);
+        } catch (DataIntegrityViolationException e) {
+            logger.warn("Попытка добавить игрока с существующим username. Username " + player.getUsername()
+                    + " уже существует в базе данных");
+
+        }
     }
 
     public void deletePlayer(int id) {
@@ -67,13 +81,13 @@ public class PlayerService {
 
 
             } else {
-                for (PlayerDto player : playerDtoList) {
-                    if (player.getId() == result.getPlayer().getId()) {
-                        player.setScore(player.getScore() + result.getNumberOfPointsPerGame());
-                        player.setCount(player.getCount() + 1);
-                        break;
-                    }
-                }
+                playerDtoList
+                        .stream()
+                        .filter(playerDto -> playerDto.getId() == result.getPlayer().getId())
+                        .forEach(playerDto -> {
+                            playerDto.setScore(playerDto.getScore() + result.getNumberOfPointsPerGame());
+                            playerDto.setCount(playerDto.getCount() + 1);
+                        });
             }
         }
 

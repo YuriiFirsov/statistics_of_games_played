@@ -6,9 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PartyToTheGameRepository extends JpaRepository<PartyToTheGame, Integer> {
 
-    PartyToTheGame findTopByOrderByIdDesc();
-
     PartyToTheGame findById(int id);
 
-    
 }

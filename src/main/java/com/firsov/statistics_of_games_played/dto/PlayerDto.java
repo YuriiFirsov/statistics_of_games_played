@@ -1,12 +1,10 @@
 package com.firsov.statistics_of_games_played.dto;
 
-
 import javax.validation.constraints.Size;
 import java.util.Objects;
 
 public class PlayerDto implements Comparable<PlayerDto> {
     private int id;
-
 
     @Size(min = 2, max = 15, message = "введите от 2 до 15 символов")
     private String username;

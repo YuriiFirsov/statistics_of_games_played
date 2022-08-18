@@ -1,6 +1,5 @@
 package com.firsov.statistics_of_games_played.entity;
 
-
 import javax.persistence.*;
 
 @Entity
