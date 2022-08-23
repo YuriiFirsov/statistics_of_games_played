@@ -11,8 +11,6 @@ public class PlayerDto {
     @Size(min = 3, max = 25, message = "введите от 3 до 25 символов")
     private String name;
 
-
-
     public PlayerDto() {
     }
 
@@ -46,8 +44,6 @@ public class PlayerDto {
         this.name = name;
     }
 
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -60,15 +56,5 @@ public class PlayerDto {
     public int hashCode() {
         return Objects.hash(id, username, name);
     }
-/*
-    @Override
-    public int compareTo(PlayerDto o) {
-        return o.getScore() - this.getScore();
-    }
 
-    public int compareByCount(PlayerDto playerDto) {
-        return Integer.compare(playerDto.getCount(), count);
-    }
-
- */
 }

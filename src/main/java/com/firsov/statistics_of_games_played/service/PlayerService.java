@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PlayerService {
@@ -29,12 +30,24 @@ public class PlayerService {
     }
 
     @Transactional
-    public List<InfoPlayerDto> getAllPlayerDto() {
-        List<Player> players = playerRepository.findAll();
-
-        return players.stream().map(this::convertToInfoPlayerDtoByNameGame).sorted(InfoPlayerDto::compareByCount).toList();
+    public List<PlayerDto> getAllPlayerDto() {
+        return playerRepository.findAll().stream().map(this::convertToPlayerDto).collect(Collectors.toList());
     }
 
+    /**
+     * метод возвращает список игроков отсортированный по суммарному количеству сыгранных игр
+     * для отображения на главной странице
+     */
+    @Transactional
+    public List<InfoPlayerDto> getAllInfoPlayerDto() {
+        List<Player> players = playerRepository.findAll();
+
+        return players.stream().map(this::convertToInfoPlayerDto).sorted(InfoPlayerDto::compareByCount).toList();
+    }
+
+    /**
+     * метод возвращает список игроков отсортированный по количеству набранных очков в выбранной игре
+     */
     @Transactional
     public List<InfoPlayerDto> getScorePlayers(String selectedGame) {
         List<Player> players = playerRepository.findAll();
@@ -64,7 +77,14 @@ public class PlayerService {
         playerRepository.deleteById(id);
     }
 
-    private InfoPlayerDto convertToInfoPlayerDtoByNameGame(Player player) {
+    private PlayerDto convertToPlayerDto(Player player) {
+        return new PlayerDto(player.getId(), player.getUsername(), player.getName());
+    }
+
+    /**
+     * метод конвертирует переданного player в infoPlayerDto и считает количество всех сыгранных игр
+     */
+    private InfoPlayerDto convertToInfoPlayerDto(Player player) {
         InfoPlayerDto infoPlayerDto = new InfoPlayerDto(player.getId(), player.getUsername(), player.getName());
         infoPlayerDto.setCount(player.getResults().size());
         int numberOfPointsScored = 0;
@@ -75,6 +95,10 @@ public class PlayerService {
         return infoPlayerDto;
     }
 
+    /**
+     * метод конвертирует переданного player в infoPlayerDto,
+     * а так же считает количество всех сыгранных игр и набранных очков в конкретной игре
+     */
     private InfoPlayerDto convertToInfoPlayerDtoByNameGame(Player player, String selectedGame) {
         InfoPlayerDto playerDto = new InfoPlayerDto(player.getId(), player.getUsername(), player.getName());
 
