@@ -38,22 +38,28 @@ public class PartyToTheGameService {
         this.gameRepository = gameRepository;
     }
 
+    /**
+     * метод возвращает список сыгранных партий для отображения на главной странице
+     */
     @Transactional
     public List<PartyDto> getAllPartiesDto() {
 
-        List<Result> results = resultRepository.findAll();
-
-        return getListPartyDto(results);
+        return getListPartyDto(resultRepository.findAll());
     }
 
+    /**
+     * метод возвращает список сыгранных партий для отображения на странице результатов в конкретной игре
+     */
     @Transactional
     public List<PartyDto> getAllPartiesDtoSelectedGame(String selectedGame) {
 
-        List<Result> results = resultRepository.findAllByPartyToTheGame_Game_Name(selectedGame);
-
-        return getListPartyDto(results);
+        return getListPartyDto(resultRepository.findAllByPartyToTheGame_Game_Name(selectedGame));
     }
 
+    /**
+     * метод преобразует partyDto в partyToTheGame для записи в БД,
+     * а также, через метод recordANewResult записывает список result в БД
+     */
     @Transactional
     public void saveOrUpdateParty(InfoPartyDto infoPartyDto) {
 
@@ -81,6 +87,9 @@ public class PartyToTheGameService {
         partyToTheGameRepository.deleteById(id);
     }
 
+    /**
+     * метод преобразует из infoPartyResultDto в result для записи в БД
+     */
     @Transactional
     public void recordANewResult(int idParty, InfoPartyResultDto infoPartyResultDto) {
         if (!infoPartyResultDto.getUsernamePlayer().equals("Выберите имя")) {
@@ -93,6 +102,12 @@ public class PartyToTheGameService {
         }
     }
 
+    /**
+     * метод преобразует выбранный по id partyToTheGame и список results в infoPartyDto.
+     * Поле infoPartyResults является списком с четко заданой размерностью, равной MAX_PLAYERS_COUNT,
+     * если количество записей в БД, соответствующих заданому id меньше MAX_PLAYERS_COUNT,
+     * разница заполняется пустыми объектами класса InfoPartyResultDto.
+     */
     @Transactional
     public InfoPartyDto collectionInfoPartyDto(int id) {
         InfoPartyDto infoPartyDto = new InfoPartyDto();
@@ -121,6 +136,10 @@ public class PartyToTheGameService {
         return infoPartyDto;
     }
 
+    /**
+     * метод создает пустой объект класса InfoPartyDto для передачи в party_info.jsp
+     * для заполнения его полей в форме
+     */
     public InfoPartyDto creatingAnEmptyInfoPartyDto() {
         InfoPartyDto infoPartyDto = new InfoPartyDto();
         List<InfoPartyResultDto> infoPartyResultDtoList = new ArrayList<>();
@@ -134,6 +153,11 @@ public class PartyToTheGameService {
         return infoPartyDto;
     }
 
+    /**
+     * метод преобразует лист объектов класса Result в отсортированный по дате лист объектов класса PartyDto.
+     * Сначало получаем лист листов объектов класса Result, сгруппированных по партиям.
+     * Далее, проходя циклом по полученному листу листов из каждого вложенного листа формируется объект класса PartyDto.
+     */
     private List<PartyDto> getListPartyDto(List<Result> results) {
         List<List<Result>> listOfResultsGroupedByParty = results.stream()
                 .collect(Collectors.groupingBy(r -> r.getPartyToTheGame().getId(), TreeMap::new, Collectors.toList()))

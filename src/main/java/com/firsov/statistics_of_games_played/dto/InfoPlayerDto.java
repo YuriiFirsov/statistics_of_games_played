@@ -5,18 +5,11 @@ public class InfoPlayerDto extends PlayerDto implements Comparable<InfoPlayerDto
     private int score;
     private int count;
 
-    public InfoPlayerDto() {
-    }
 
     public InfoPlayerDto(int id, String username, String name) {
         super(id, username, name);
     }
 
-    public InfoPlayerDto(int id, String username, String name, int score, int count) {
-        super(id, username, name);
-        this.score = score;
-        this.count = count;
-    }
 
     public int getScore() {
         return score;

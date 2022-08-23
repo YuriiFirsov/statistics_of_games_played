@@ -3,7 +3,6 @@ package com.firsov.statistics_of_games_played.controller;
 import com.firsov.statistics_of_games_played.dto.GameDto;
 import com.firsov.statistics_of_games_played.dto.InfoPlayerDto;
 import com.firsov.statistics_of_games_played.dto.PartyDto;
-import com.firsov.statistics_of_games_played.dto.PlayerDto;
 import com.firsov.statistics_of_games_played.service.GameService;
 import com.firsov.statistics_of_games_played.service.PartyToTheGameService;
 import com.firsov.statistics_of_games_played.service.PlayerService;
@@ -29,10 +28,13 @@ public class MainController {
         this.partyToTheGameService = partyToTheGameService;
     }
 
+    /**
+     * Метод возвращает главную страницу с информацией по играм, игрокам и сыгранным партиям
+     */
     @GetMapping("/index")
     public String showAll(Model model) {
         List<GameDto> games = gameService.getAllGameDto();
-        List<InfoPlayerDto> players = playerService.getAllPlayerDto();
+        List<InfoPlayerDto> players = playerService.getAllInfoPlayerDto();
         List<PartyDto> parties = partyToTheGameService.getAllPartiesDto();
 
         model.addAttribute("games", games);
@@ -42,6 +44,9 @@ public class MainController {
         return "index";
     }
 
+    /**
+     * Метод возвращает страницу с информацией по игрокам и сыгранным партиям по выбранной игре
+     */
     @GetMapping("/show_info_selected_game")
     public String showGame(Model model, @RequestParam("selectedGame") String selectedGame) {
         List<InfoPlayerDto> players = playerService.getScorePlayers(selectedGame);

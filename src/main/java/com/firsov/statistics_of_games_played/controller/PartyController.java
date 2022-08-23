@@ -29,7 +29,7 @@ public class PartyController {
     public String addParty(Model model) {
         InfoPartyDto infoPartyDto = partyService.creatingAnEmptyInfoPartyDto();
         List<GameDto> games = gameService.getAllGameDto();
-        List<InfoPlayerDto> players = playerService.getAllPlayerDto();
+        List<PlayerDto> players = playerService.getAllPlayerDto();
 
         model.addAttribute("party", infoPartyDto);
         model.addAttribute("games", games);
@@ -52,7 +52,7 @@ public class PartyController {
     @GetMapping("/update_party")
     public String updateParty(@RequestParam("partyId") int id, Model model) {
         List<GameDto> games = gameService.getAllGameDto();
-        List<InfoPlayerDto> players = playerService.getAllPlayerDto();
+        List<PlayerDto> players = playerService.getAllPlayerDto();
         InfoPartyDto infoPartyDto = partyService.collectionInfoPartyDto(id);
 
         model.addAttribute("games", games);
