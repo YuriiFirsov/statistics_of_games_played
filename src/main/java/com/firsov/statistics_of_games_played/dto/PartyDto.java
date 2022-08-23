@@ -6,17 +6,10 @@ public class PartyDto {
 
     private int id;
     private String gameName;
-    private  String partyDate;
+    private String partyDate;
     private List<ResultDto> resultDtoList;
 
     public PartyDto() {
-    }
-
-    public PartyDto(int id, String gameName, String partyDate, List<ResultDto> resultDtoList) {
-        this.id = id;
-        this.gameName = gameName;
-        this.partyDate = partyDate;
-        this.resultDtoList = resultDtoList;
     }
 
     public int getId() {
@@ -50,4 +43,6 @@ public class PartyDto {
     public void setResultDtoList(List<ResultDto> resultDtoList) {
         this.resultDtoList = resultDtoList;
     }
+
+
 }

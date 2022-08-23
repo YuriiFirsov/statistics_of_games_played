@@ -1,6 +1,7 @@
 package com.firsov.statistics_of_games_played.controller;
 
 import com.firsov.statistics_of_games_played.dto.GameDto;
+import com.firsov.statistics_of_games_played.dto.InfoPlayerDto;
 import com.firsov.statistics_of_games_played.dto.PartyDto;
 import com.firsov.statistics_of_games_played.dto.PlayerDto;
 import com.firsov.statistics_of_games_played.service.GameService;
@@ -16,19 +17,22 @@ import java.util.List;
 @Controller
 public class MainController {
 
-    @Autowired
-    private GameService gameService;
+    private final GameService gameService;
+    private final PlayerService playerService;
+    private final PartyToTheGameService partyToTheGameService;
 
     @Autowired
-    private PlayerService playerService;
-
-    @Autowired
-    private PartyToTheGameService partyToTheGameService;
+    public MainController(GameService gameService, PlayerService playerService,
+                          PartyToTheGameService partyToTheGameService) {
+        this.gameService = gameService;
+        this.playerService = playerService;
+        this.partyToTheGameService = partyToTheGameService;
+    }
 
     @GetMapping("/index")
     public String showAll(Model model) {
         List<GameDto> games = gameService.getAllGameDto();
-        List<PlayerDto> players = playerService.getAllPlayerDto();
+        List<InfoPlayerDto> players = playerService.getAllPlayerDto();
         List<PartyDto> parties = partyToTheGameService.getAllPartiesDto();
 
         model.addAttribute("games", games);
@@ -40,7 +44,7 @@ public class MainController {
 
     @GetMapping("/show_info_selected_game")
     public String showGame(Model model, @RequestParam("selectedGame") String selectedGame) {
-        List<PlayerDto> players = playerService.getScorePlayers(selectedGame);
+        List<InfoPlayerDto> players = playerService.getScorePlayers(selectedGame);
         List<PartyDto> parties = partyToTheGameService.getAllPartiesDtoSelectedGame(selectedGame);
 
         model.addAttribute("players", players);

@@ -1,9 +1,11 @@
 package com.firsov.statistics_of_games_played.controller;
 
 import com.firsov.statistics_of_games_played.dto.PlayerDto;
+import com.firsov.statistics_of_games_played.exception.PlayerAlreadyExistsException;
 import com.firsov.statistics_of_games_played.service.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -13,8 +15,12 @@ import javax.validation.Valid;
 @Controller
 public class PlayerController {
 
+    private final PlayerService playerService;
+
     @Autowired
-    PlayerService playerService = new PlayerService();
+    public PlayerController(PlayerService playerService) {
+        this.playerService = playerService;
+    }
 
     @GetMapping("/add_player")
     public String addPlayer(Model model) {
@@ -25,11 +31,16 @@ public class PlayerController {
 
     @PostMapping("save_new_player")
     public String saveNewPlayer(@ModelAttribute("player") @Valid PlayerDto playerDto
-            , BindingResult bindingResult) {
+            , BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
             return "/add_player";
         } else {
-            playerService.savePlayer(playerDto);
+            try {
+                playerService.savePlayer(playerDto);
+            } catch (PlayerAlreadyExistsException e) {
+                model.addAttribute("error", e.getMessage());
+                return "/errors";
+            }
             return "redirect:/index";
         }
     }
