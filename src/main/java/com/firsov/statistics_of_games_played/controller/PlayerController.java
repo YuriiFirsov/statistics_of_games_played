@@ -1,6 +1,7 @@
 package com.firsov.statistics_of_games_played.controller;
 
 import com.firsov.statistics_of_games_played.dto.PlayerDto;
+import com.firsov.statistics_of_games_played.exception.PlayerAlreadyExistsException;
 import com.firsov.statistics_of_games_played.service.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -36,10 +37,8 @@ public class PlayerController {
         } else {
             try {
                 playerService.savePlayer(playerDto);
-            } catch (UnexpectedRollbackException e) {
-                String error = "Произошла ошибка при добавлении игрока - " + playerDto.getUsername()
-                        + ". Игрок с таким username уже существует в базе данных";
-                model.addAttribute("error", error);
+            } catch (PlayerAlreadyExistsException e) {
+                model.addAttribute("error", e.getMessage());
                 return "/errors";
             }
             return "redirect:/index";

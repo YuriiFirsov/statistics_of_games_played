@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@Transactional
 public class GameService {
 
     Logger logger = LoggerFactory.getLogger(GameService.class);
@@ -26,16 +25,14 @@ public class GameService {
         this.gameRepository = gameRepository;
     }
 
+    @Transactional
     public List<GameDto> getAllGameDto() {
         List<Game> games = gameRepository.findAll();
 
         return games.stream().map(game -> new GameDto(game.getId(), game.getName())).toList();
     }
 
-    public List<Game> getAllGame() {
-        return gameRepository.findAll();
-    }
-
+    @Transactional
     public void saveNewGame(GameDto gameDto) {
         Game game = new Game(gameDto.getName());
         try {

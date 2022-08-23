@@ -1,10 +1,11 @@
 package com.firsov.statistics_of_games_played.service;
 
 import com.firsov.statistics_of_games_played.dao.PlayerRepository;
-import com.firsov.statistics_of_games_played.dao.ResultRepository;
+import com.firsov.statistics_of_games_played.dto.InfoPlayerDto;
 import com.firsov.statistics_of_games_played.dto.PlayerDto;
 import com.firsov.statistics_of_games_played.entity.Player;
 import com.firsov.statistics_of_games_played.entity.Result;
+import com.firsov.statistics_of_games_played.exception.PlayerAlreadyExistsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,87 +13,82 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
-@Transactional
 public class PlayerService {
 
     Logger logger = LoggerFactory.getLogger(PlayerService.class);
 
     private final PlayerRepository playerRepository;
-    private final ResultRepository resultRepository;
+
 
     @Autowired
-    public PlayerService(PlayerRepository playerRepository, ResultRepository resultRepository) {
+    public PlayerService(PlayerRepository playerRepository) {
         this.playerRepository = playerRepository;
-        this.resultRepository = resultRepository;
     }
 
-    public List<PlayerDto> getAllPlayerDto() {
-        List<Result> results = resultRepository.findAll();
+    @Transactional
+    public List<InfoPlayerDto> getAllPlayerDto() {
         List<Player> players = playerRepository.findAll();
-        List<PlayerDto> playerDtoList = getListPlayerDto(results);
 
-        for (Player player : players) {
-            if (!playerDtoList.contains(convertToPlayerDto(player))) {
-                playerDtoList.add(new PlayerDto(player.getId(), player.getUsername()
-                        , player.getName(), 0, 0));
-            }
-        }
-
-        return playerDtoList.stream().sorted(PlayerDto::compareByCount).collect(Collectors.toList());
+        return players.stream().map(this::convertToInfoPlayerDtoByNameGame).sorted(InfoPlayerDto::compareByCount).toList();
     }
 
-    public List<PlayerDto> getScorePlayers(String selectedGame) {
-        List<Result> results = resultRepository.findAllByPartyToTheGame_Game_Name(selectedGame);
+    @Transactional
+    public List<InfoPlayerDto> getScorePlayers(String selectedGame) {
+        List<Player> players = playerRepository.findAll();
 
-        return getListPlayerDto(results).stream().sorted().collect(Collectors.toList());
+        return players.stream()
+                .map(player -> convertToInfoPlayerDtoByNameGame(player, selectedGame))
+                .filter(playerDto -> playerDto.getCount() != 0)
+                .sorted().toList();
     }
 
+    @Transactional
     public void savePlayer(PlayerDto playerDto) {
         Player player = new Player(playerDto.getUsername(), playerDto.getName());
         try {
             playerRepository.save(player);
         } catch (DataIntegrityViolationException e) {
-            logger.warn("Попытка добавить игрока с существующим username. Username " + player.getUsername()
-                    + " уже существует в базе данных");
+            String error = "Произошла ошибка при добавлении игрока с  username - " + player.getUsername()
+                    + " Данный username уже существует в базе данных";
+            logger.warn(error, e);
+            throw new PlayerAlreadyExistsException(error);
 
         }
     }
 
+    @Transactional
     public void deletePlayer(int id) {
         playerRepository.deleteById(id);
     }
 
-    public PlayerDto convertToPlayerDto(Player player) {
-        return new PlayerDto(player.getId(), player.getUsername(), player.getName());
+    private InfoPlayerDto convertToInfoPlayerDtoByNameGame(Player player) {
+        InfoPlayerDto infoPlayerDto = new InfoPlayerDto(player.getId(), player.getUsername(), player.getName());
+        infoPlayerDto.setCount(player.getResults().size());
+        int numberOfPointsScored = 0;
+        for (Result result : player.getResults()) {
+            numberOfPointsScored += result.getNumberOfPointsPerGame();
+        }
+        infoPlayerDto.setScore(numberOfPointsScored);
+        return infoPlayerDto;
     }
 
-    public List<PlayerDto> getListPlayerDto(List<Result> results) {
-        List<PlayerDto> playerDtoList = new ArrayList<>();
+    private InfoPlayerDto convertToInfoPlayerDtoByNameGame(Player player, String selectedGame) {
+        InfoPlayerDto playerDto = new InfoPlayerDto(player.getId(), player.getUsername(), player.getName());
 
-        for (Result result : results) {
-            if (!playerDtoList.contains(convertToPlayerDto(result.getPlayer()))) {
-                playerDtoList.add(new PlayerDto(result.getPlayer().getId(), result.getPlayer().getUsername()
-                        , result.getPlayer().getName(), result.getNumberOfPointsPerGame(), 1));
-
-
-            } else {
-                playerDtoList
-                        .stream()
-                        .filter(playerDto -> playerDto.getId() == result.getPlayer().getId())
-                        .forEach(playerDto -> {
-                            playerDto.setScore(playerDto.getScore() + result.getNumberOfPointsPerGame());
-                            playerDto.setCount(playerDto.getCount() + 1);
-                        });
+        int numberOfPointsScored = 0;
+        int count = 0;
+        for (Result result : player.getResults()) {
+            if (result.getPartyToTheGame().getGame().getName().equals(selectedGame)) {
+                count++;
+                numberOfPointsScored += result.getNumberOfPointsPerGame();
             }
         }
-
-        return playerDtoList;
+        playerDto.setCount(count);
+        playerDto.setScore(numberOfPointsScored);
+        return playerDto;
     }
-
 
 }

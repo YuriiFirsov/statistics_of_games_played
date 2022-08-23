@@ -3,15 +3,14 @@ package com.firsov.statistics_of_games_played.dto;
 import javax.validation.constraints.Size;
 import java.util.Objects;
 
-public class PlayerDto implements Comparable<PlayerDto> {
+public class PlayerDto {
     private int id;
 
     @Size(min = 2, max = 15, message = "введите от 2 до 15 символов")
     private String username;
     @Size(min = 3, max = 25, message = "введите от 3 до 25 символов")
     private String name;
-    private int score;
-    private int count;
+
 
 
     public PlayerDto() {
@@ -21,14 +20,6 @@ public class PlayerDto implements Comparable<PlayerDto> {
         this.id = id;
         this.username = username;
         this.name = name;
-    }
-
-    public PlayerDto(int id, String username, String name, int score, int count) {
-        this.id = id;
-        this.username = username;
-        this.name = name;
-        this.score = score;
-        this.count = count;
     }
 
     public int getId() {
@@ -55,21 +46,7 @@ public class PlayerDto implements Comparable<PlayerDto> {
         this.name = name;
     }
 
-    public int getScore() {
-        return score;
-    }
 
-    public void setScore(int score) {
-        this.score = score;
-    }
-
-    public int getCount() {
-        return count;
-    }
-
-    public void setCount(int count) {
-        this.count = count;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -83,7 +60,7 @@ public class PlayerDto implements Comparable<PlayerDto> {
     public int hashCode() {
         return Objects.hash(id, username, name);
     }
-
+/*
     @Override
     public int compareTo(PlayerDto o) {
         return o.getScore() - this.getScore();
@@ -92,4 +69,6 @@ public class PlayerDto implements Comparable<PlayerDto> {
     public int compareByCount(PlayerDto playerDto) {
         return Integer.compare(playerDto.getCount(), count);
     }
+
+ */
 }

@@ -4,10 +4,7 @@ import com.firsov.statistics_of_games_played.dao.GameRepository;
 import com.firsov.statistics_of_games_played.dao.PartyToTheGameRepository;
 import com.firsov.statistics_of_games_played.dao.PlayerRepository;
 import com.firsov.statistics_of_games_played.dao.ResultRepository;
-import com.firsov.statistics_of_games_played.dto.DateTimePartyDtoComparator;
-import com.firsov.statistics_of_games_played.dto.InfoPartyDto;
-import com.firsov.statistics_of_games_played.dto.PartyDto;
-import com.firsov.statistics_of_games_played.dto.ResultDto;
+import com.firsov.statistics_of_games_played.dto.*;
 import com.firsov.statistics_of_games_played.entity.PartyToTheGame;
 
 import com.firsov.statistics_of_games_played.entity.Result;
@@ -21,8 +18,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 public class PartyToTheGameService {
+
+    private static final int MAX_PLAYERS_COUNT = 4;
 
     private final PartyToTheGameRepository partyToTheGameRepository;
     private final ResultRepository resultRepository;
@@ -40,6 +38,7 @@ public class PartyToTheGameService {
         this.gameRepository = gameRepository;
     }
 
+    @Transactional
     public List<PartyDto> getAllPartiesDto() {
 
         List<Result> results = resultRepository.findAll();
@@ -47,6 +46,7 @@ public class PartyToTheGameService {
         return getListPartyDto(results);
     }
 
+    @Transactional
     public List<PartyDto> getAllPartiesDtoSelectedGame(String selectedGame) {
 
         List<Result> results = resultRepository.findAllByPartyToTheGame_Game_Name(selectedGame);
@@ -54,6 +54,7 @@ public class PartyToTheGameService {
         return getListPartyDto(results);
     }
 
+    @Transactional
     public void saveOrUpdateParty(InfoPartyDto infoPartyDto) {
 
         PartyToTheGame partyToTheGame = new PartyToTheGame();
@@ -68,31 +69,72 @@ public class PartyToTheGameService {
 
         partyToTheGameRepository.save(partyToTheGame);
 
-        recordANewResult(partyToTheGame.getId(), infoPartyDto.getIdResult1(), infoPartyDto.getUsernamePlayer1(), infoPartyDto.getScorePlayer1());
-        recordANewResult(partyToTheGame.getId(), infoPartyDto.getIdResult2(), infoPartyDto.getUsernamePlayer2(), infoPartyDto.getScorePlayer2());
-        recordANewResult(partyToTheGame.getId(), infoPartyDto.getIdResult3(), infoPartyDto.getUsernamePlayer3(), infoPartyDto.getScorePlayer3());
-        recordANewResult(partyToTheGame.getId(), infoPartyDto.getIdResult4(), infoPartyDto.getUsernamePlayer4(), infoPartyDto.getScorePlayer4());
+        infoPartyDto.getInfoPartyResults()
+                .forEach(infoPartyResultDto -> recordANewResult(partyToTheGame.getId(), infoPartyResultDto));
 
     }
 
+    @Transactional
     public void deletePartyToTheGame(int id) {
 
         resultRepository.deleteAllByPartyToTheGame_Id(id);
         partyToTheGameRepository.deleteById(id);
     }
 
-    public void recordANewResult(int idParty, int idResult, String player, int score) {
-        if (!player.equals("Выберите имя")) {
+    @Transactional
+    public void recordANewResult(int idParty, InfoPartyResultDto infoPartyResultDto) {
+        if (!infoPartyResultDto.getUsernamePlayer().equals("Выберите имя")) {
             Result result = new Result();
-            result.setId(idResult);
+            result.setId(infoPartyResultDto.getIdResult());
             result.setPartyToTheGame(partyToTheGameRepository.findById(idParty));
-            result.setPlayer(playerRepository.findByUsername(player));
-            result.setNumberOfPointsPerGame(score);
+            result.setPlayer(playerRepository.findByUsername(infoPartyResultDto.getUsernamePlayer()));
+            result.setNumberOfPointsPerGame(infoPartyResultDto.getScorePlayer());
             resultRepository.save(result);
         }
     }
 
-    public List<PartyDto> getListPartyDto(List<Result> results) {
+    @Transactional
+    public InfoPartyDto collectionInfoPartyDto(int id) {
+        InfoPartyDto infoPartyDto = new InfoPartyDto();
+        PartyToTheGame partyToTheGame = partyToTheGameRepository.findById(id);
+        List<Result> results = resultRepository.findAllByPartyToTheGame_Id(id);
+
+        infoPartyDto.setIdParty(partyToTheGame.getId());
+        infoPartyDto.setGameName(partyToTheGame.getGame().getName());
+        infoPartyDto.setDate(partyToTheGame.getDate().toString());
+
+        List<InfoPartyResultDto> infoPartyResultDtos = results
+                .stream()
+                .map(result -> new InfoPartyResultDto(
+                        result.getId(),
+                        result.getPlayer().getUsername(),
+                        result.getNumberOfPointsPerGame()
+                ))
+                .collect(Collectors.toList());
+
+        while (infoPartyResultDtos.size() < MAX_PLAYERS_COUNT) {
+            infoPartyResultDtos.add(new InfoPartyResultDto());
+        }
+
+        infoPartyDto.setInfoPartyResults(infoPartyResultDtos);
+
+        return infoPartyDto;
+    }
+
+    public InfoPartyDto creatingAnEmptyInfoPartyDto() {
+        InfoPartyDto infoPartyDto = new InfoPartyDto();
+        List<InfoPartyResultDto> infoPartyResultDtoList = new ArrayList<>();
+
+        for (int i = 0; i < MAX_PLAYERS_COUNT; i++) {
+            infoPartyResultDtoList.add(new InfoPartyResultDto());
+        }
+
+        infoPartyDto.setInfoPartyResults(infoPartyResultDtoList);
+
+        return infoPartyDto;
+    }
+
+    private List<PartyDto> getListPartyDto(List<Result> results) {
         List<List<Result>> listOfResultsGroupedByParty = results.stream()
                 .collect(Collectors.groupingBy(r -> r.getPartyToTheGame().getId(), TreeMap::new, Collectors.toList()))
                 .values().stream().toList();
@@ -122,42 +164,12 @@ public class PartyToTheGameService {
             allPartyDto.add(partyDto);
         });
 
-        return allPartyDto.stream().sorted(new DateTimePartyDtoComparator()).collect(Collectors.toList());
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm");
+        return allPartyDto
+                .stream()
+                .sorted((o1, o2) -> LocalDateTime.parse(o2.getPartyDate(),
+                        df).compareTo(LocalDateTime.parse(o1.getPartyDate(), df)))
+                .collect(Collectors.toList());
     }
 
-    public InfoPartyDto collectionNewPartyDto(int id) {
-        InfoPartyDto infoPartyDto = new InfoPartyDto();
-        PartyToTheGame partyToTheGame = partyToTheGameRepository.findById(id);
-        List<Result> results = resultRepository.findAllByPartyToTheGame_Id(id);
-
-        infoPartyDto.setIdParty(partyToTheGame.getId());
-        infoPartyDto.setGameName(partyToTheGame.getGame().getName());
-        infoPartyDto.setDate(partyToTheGame.getDate().toString());
-
-        if (results.size() > 0) {
-            infoPartyDto.setIdResult1(results.get(0).getId());
-            infoPartyDto.setUsernamePlayer1(results.get(0).getPlayer().getUsername());
-            infoPartyDto.setScorePlayer1(results.get(0).getNumberOfPointsPerGame());
-        }
-
-        if (results.size() > 1) {
-        infoPartyDto.setIdResult2(results.get(1).getId());
-        infoPartyDto.setUsernamePlayer2(results.get(1).getPlayer().getUsername());
-        infoPartyDto.setScorePlayer2(results.get(1).getNumberOfPointsPerGame());
-        }
-
-        if (results.size() > 2) {
-            infoPartyDto.setIdResult3(results.get(2).getId());
-            infoPartyDto.setUsernamePlayer3(results.get(2).getPlayer().getUsername());
-            infoPartyDto.setScorePlayer3(results.get(2).getNumberOfPointsPerGame());
-        }
-
-        if (results.size() > 3) {
-            infoPartyDto.setIdResult4(results.get(3).getId());
-            infoPartyDto.setUsernamePlayer4(results.get(3).getPlayer().getUsername());
-            infoPartyDto.setScorePlayer4(results.get(3).getNumberOfPointsPerGame());
-        }
-
-        return infoPartyDto;
-    }
 }

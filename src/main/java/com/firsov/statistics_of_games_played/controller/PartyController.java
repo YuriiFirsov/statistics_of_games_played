@@ -1,8 +1,6 @@
 package com.firsov.statistics_of_games_played.controller;
 
-import com.firsov.statistics_of_games_played.dto.InfoPartyDto;
-import com.firsov.statistics_of_games_played.dto.PlayerDto;
-import com.firsov.statistics_of_games_played.entity.Game;
+import com.firsov.statistics_of_games_played.dto.*;
 import com.firsov.statistics_of_games_played.service.GameService;
 import com.firsov.statistics_of_games_played.service.PartyToTheGameService;
 import com.firsov.statistics_of_games_played.service.PlayerService;
@@ -29,9 +27,9 @@ public class PartyController {
 
     @GetMapping("/add_party")
     public String addParty(Model model) {
-        InfoPartyDto infoPartyDto = new InfoPartyDto();
-        List<Game> games = gameService.getAllGame();
-        List<PlayerDto> players = playerService.getAllPlayerDto();
+        InfoPartyDto infoPartyDto = partyService.creatingAnEmptyInfoPartyDto();
+        List<GameDto> games = gameService.getAllGameDto();
+        List<InfoPlayerDto> players = playerService.getAllPlayerDto();
 
         model.addAttribute("party", infoPartyDto);
         model.addAttribute("games", games);
@@ -53,9 +51,9 @@ public class PartyController {
 
     @GetMapping("/update_party")
     public String updateParty(@RequestParam("partyId") int id, Model model) {
-        List<Game> games = gameService.getAllGame();
-        List<PlayerDto> players = playerService.getAllPlayerDto();
-        InfoPartyDto infoPartyDto = partyService.collectionNewPartyDto(id);
+        List<GameDto> games = gameService.getAllGameDto();
+        List<InfoPlayerDto> players = playerService.getAllPlayerDto();
+        InfoPartyDto infoPartyDto = partyService.collectionInfoPartyDto(id);
 
         model.addAttribute("games", games);
         model.addAttribute("players", players);

@@ -30,69 +30,27 @@
             <br><br>
             Выберите игру: <form:select path="gameName">
             <c:forEach var="game" items="${games}">
-                <form:option value="${game.name}" label="123123"/>
+                <form:option value="${game.name}"/>
             </c:forEach>
         </form:select>
 
-            <br><br>
-            <form:hidden path="idResult1"/>
-            Игрок №1:<form:select path="usernamePlayer1">
-            <form:option value="Выберите имя"/>
-            <c:forEach var="player" items="${players}">
-                <form:option value="${player.username}"/>
+            <c:forEach var="infoPartyResult" items="${party.infoPartyResults}" varStatus="index">
+                <br><br>
+                <form:hidden path="infoPartyResults[${index.index}].idResult"/>
+                Игрок №${index.count}:<form:select path="infoPartyResults[${index.index}].usernamePlayer">
+                <form:option value="Выберите имя"/>
+                <c:forEach var="player" items="${players}">
+                    <form:option value="${player.username}"/>
+                </c:forEach>
+            </form:select>
+                Введите кол-во очков:<form:select path="infoPartyResults[${index.index}].scorePlayer">
+                <form:option value="0"/>
+                <form:option value="1"/>
+                <form:option value="2"/>
+                <form:option value="3"/>
+            </form:select>
             </c:forEach>
-        </form:select>
-            Введите кол-во очков:<form:select path="scorePlayer1">
-            <form:option value="0"/>
-            <form:option value="1"/>
-            <form:option value="2"/>
-            <form:option value="3"/>
-        </form:select>
 
-            <br><br>
-            <form:hidden path="idResult2"/>
-            Игрок №2:<form:select path="usernamePlayer2">
-            <form:option value="Выберите имя"/>
-            <c:forEach var="player" items="${players}">
-                <form:option value="${player.username}"/>
-            </c:forEach>
-        </form:select>
-            Введите кол-во очков:<form:select path="scorePlayer2">
-            <form:option value="0"/>
-            <form:option value="1"/>
-            <form:option value="2"/>
-            <form:option value="3"/>
-        </form:select>
-
-            <br><br>
-            <form:hidden path="idResult3"/>
-            Игрок №3:<form:select path="usernamePlayer3">
-            <form:option value="Выберите имя"/>
-            <c:forEach var="player" items="${players}">
-                <form:option value="${player.username}"/>
-            </c:forEach>
-        </form:select>
-            Введите кол-во очков:<form:select path="scorePlayer3">
-            <form:option value="0"/>
-            <form:option value="1"/>
-            <form:option value="2"/>
-            <form:option value="3"/>
-        </form:select>
-
-            <br><br>
-            <form:hidden path="idResult4"/>
-            Игрок №4:<form:select path="usernamePlayer4">
-            <form:option value="Выберите имя"/>
-            <c:forEach var="player" items="${players}">
-                <form:option value="${player.username}"/>
-            </c:forEach>
-        </form:select>
-            Введите кол-во очков:<form:select path="scorePlayer4">
-            <form:option value="0"/>
-            <form:option value="1"/>
-            <form:option value="2"/>
-            <form:option value="3"/>
-        </form:select>
 
             <br><br>
             Введите время (при пустом поле запишется текущее время):<form:input type="datetime-local" placeholder="yyyy.MM.dd HH:mm" path="date"/>
